@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Disinfo Radar &middot; GTU</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:#f8fafc;font-family:Georgia,serif;color:#1a1a2e;min-height:100vh}
+    .top-bar{background:#c0392b;height:4px}
+    header{background:#fff;border-bottom:1px solid #e2e8f0;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+    .header-inner{max-width:900px;margin:0 auto;padding:16px 20px}
+    .logo-row{display:flex;align-items:center;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+    .logo-box{width:48px;height:48px;background:#c0392b;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .logo-text div:first-child{font-size:11px;color:#64748b;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px}
+    .logo-text div:last-child{font-size:13px;color:#475569;font-style:italic}
+    .lang-btns{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+    .lang-btn{padding:5px 12px;border-radius:4px;border:1px solid #e2e8f0;background:#fff;color:#64748b;cursor:pointer;font-size:12px;font-family:Georgia,serif;transition:all .15s}
+    .lang-btn.active{border:2px solid #c0392b;background:#fef2f2;color:#c0392b;font-weight:700}
+    .title-bar{border-left:4px solid #c0392b;padding-left:16px}
+    .title-bar h1{font-size:clamp(22px,4vw,32px);font-weight:900;margin:0 0 4px;color:#1a1a2e}
+    .title-bar p{margin:0;color:#64748b;font-size:14px}
+    main{max-width:900px;margin:0 auto;padding:32px 20px}
+    .card{background:#fff;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:20px;overflow:hidden}
+    .about-btn{width:100%;padding:14px 20px;background:none;border:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-family:Georgia,serif;font-size:14px;font-weight:600;color:#1e3a5f;text-align:left}
+    .about-body{padding:0 20px 16px;font-size:13px;color:#475569;line-height:1.7;border-top:1px solid #f1f5f9;display:none}
+    .about-body.open{display:block}
+    .input-card{padding:24px}
+    .row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+    .input-label{font-size:13px;font-weight:700;color:#1a1a2e;text-transform:uppercase;letter-spacing:.8px}
+    .btn-sm{font-size:12px;padding:5px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;color:#475569;cursor:pointer;font-family:Georgia,serif}
+    textarea{width:100%;padding:14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;color:#1a1a2e;font-size:14px;font-family:Georgia,serif;resize:vertical;outline:none;line-height:1.7}
+    textarea:focus{border-color:#c0392b}
+    .char-count{text-align:right;font-size:11px;color:#94a3b8;margin-top:4px}
+    .error-box{margin-top:12px;padding:10px 14px;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;color:#dc2626;font-size:13px}
+    .analyze-btn{width:100%;margin-top:16px;padding:14px;background:#c0392b;border:none;border-radius:6px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:Georgia,serif;box-shadow:0 2px 8px rgba(192,57,43,.3);transition:background .2s}
+    .analyze-btn:disabled{background:#94a3b8;cursor:not-allowed;box-shadow:none}
+    .result-risk{border-radius:8px;padding:24px;margin-bottom:16px}
+    .risk-badge{display:inline-block;padding:4px 12px;color:#fff;border-radius:4px;font-size:12px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px}
+    .score-bar-wrap{margin:12px 0}
+    .score-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .score-num{font-size:28px;font-weight:900;font-family:Georgia,serif}
+    .score-track{height:10px;background:#e2e8f0;border-radius:99px;overflow:hidden}
+    .score-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#22c55e,#eab308,#f97316,#ef4444);background-size:400% 100%;transition:width .8s ease}
+    .summary-text{margin:16px 0 0;font-size:14px;color:#475569;line-height:1.7;font-style:italic}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+    .mini-card{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px}
+    .mini-label{font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+    .mini-val{font-size:14px;color:#1a1a2e;font-weight:600}
+    .indicators-card{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:20px;margin-bottom:12px}
+    .ind-title{font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px;font-weight:700;margin-bottom:14px}
+    .ind-item{display:flex;gap:10px;align-items:flex-start;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid #f1f5f9;font-size:14px;color:#475569;line-height:1.6}
+    .ind-item:last-child{padding-bottom:0;margin-bottom:0;border-bottom:none}
+    .ind-num{width:20px;height:20px;background:#c0392b;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px}
+    .rec-card{background:#eff6ff;border:1px solid #bfdbfe;border-left:5px solid #1e3a5f;border-radius:8px;padding:20px;margin-bottom:24px}
+    .rec-label{font-size:11px;color:#3b82f6;text-transform:uppercase;letter-spacing:.8px;font-weight:700;margin-bottom:8px}
+    .rec-text{font-size:14px;color:#1e3a5f;line-height:1.7}
+    footer{border-top:1px solid #e2e8f0;background:#fff;padding:20px;text-align:center;font-size:12px;color:#94a3b8}
+    footer .f1{color:#64748b;font-weight:600;margin-bottom:4px}
+    @media(max-width:600px){.grid2{grid-template-columns:1fr}.lang-btns{margin-left:0}}
+  </style>
+</head>
+<body>
+<div class="top-bar"></div>
+<header>
+  <div class="header-inner">
+    <div class="logo-row">
+      <div class="logo-box">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <rect x="3" y="3" width="10" height="10" fill="white" opacity="0.9"/>
+          <rect x="15" y="3" width="10" height="10" fill="white" opacity="0.9"/>
+          <rect x="3" y="15" width="10" height="10" fill="white" opacity="0.9"/>
+          <rect x="15" y="15" width="10" height="10" fill="white" opacity="0.9"/>
+        </svg>
+      </div>
+      <div class="logo-text">
+        <div>Georgian Technical University</div>
+        <div>Faculty of Business Technology &middot; Public Administration</div>
+      </div>
+      <div class="lang-btns">
+        <button class="lang-btn active" onclick="setLang('en')">&#127482;&#127480; English</button>
+        <button class="lang-btn" onclick="setLang('ru')">&#127479;&#127482; &#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;</button>
+        <button class="lang-btn" onclick="setLang('ka')">&#127468;&#127466; &#4325;&#4304;&#4320;&#4311;&#4323;&#4314;&#4312;</button>
+      </div>
+    </div>
+    <div class="title-bar">
+      <h1 id="ui-title">Disinfo Radar</h1>
+      <p id="ui-subtitle">AI-powered Information Threat Analysis</p>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="card">
+    <button class="about-btn" onclick="toggleAbout()">
+      <span>&#9432; <span id="ui-about">About</span></span>
+      <span id="about-arrow">&#9660;</span>
+    </button>
+    <div class="about-body" id="about-body">
+      <br/><span id="ui-about-text">This tool was developed as part of a master's research project in the subject of Geopolitics of Information Security at Georgian Technical University. It uses LLaMA 3.3 70B AI to analyze texts in geopolitical context.</span>
+    </div>
+  </div>
+
+  <div class="card input-card">
+    <div class="row">
+      <span class="input-label" id="ui-text-label">Analyze Text</span>
+      <div style="display:flex;gap:8px">
+        <button class="btn-sm" onclick="loadExample()" id="ui-example-btn">Example</button>
+        <button class="btn-sm" onclick="clearAll()" id="ui-clear-btn">Clear</button>
+      </div>
+    </div>
+    <textarea id="inputText" rows="6" placeholder="Paste any article, news piece or social media post for analysis..." oninput="updateCount()"></textarea>
+    <div class="char-count"><span id="charCount">0</span> <span id="ui-chars">chars</span></div>
+    <div class="error-box" id="errorBox" style="display:none"></div>
+    <button class="analyze-btn" id="analyzeBtn" onclick="analyze()">&#128269; <span id="ui-analyze-btn">Analyze</span></button>
+  </div>
+
+  <div id="resultArea" style="display:none">
+    <div class="result-risk" id="riskBanner">
+      <div><span class="risk-badge" id="riskBadge"></span> <span style="font-size:13px;color:#475569;font-weight:700" id="ui-risk-score">Risk Score</span></div>
+      <div class="score-bar-wrap">
+        <div class="score-top">
+          <span style="font-size:13px;color:#64748b;font-weight:600">0</span>
+          <span class="score-num" id="scoreNum"></span>
+          <span style="font-size:13px;color:#64748b;font-weight:600">100</span>
+        </div>
+        <div class="score-track"><div class="score-fill" id="scoreFill"></div></div>
+      </div>
+      <p class="summary-text" id="summaryText"></p>
+    </div>
+
+    <div class="grid2">
+      <div class="mini-card">
+        <div class="mini-label">&#129513; <span id="ui-narrative">Narrative Type</span></div>
+        <div class="mini-val" id="narrativeVal"></div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-label">&#128225; <span id="ui-source">Probable Source</span></div>
+        <div class="mini-val" id="sourceVal"></div>
+      </div>
+    </div>
+
+    <div class="indicators-card">
+      <div class="ind-title">&#9888; <span id="ui-indicators">Disinformation Indicators</span></div>
+      <div id="indicatorsList"></div>
+    </div>
+
+    <div class="rec-card">
+      <div class="rec-label">&#128161; <span id="ui-rec">Actionable Recommendation</span></div>
+      <div class="rec-text" id="recText"></div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="f1">Georgian Technical University &middot; Faculty of Business Technology</div>
+  <div>Powered by Groq &times; LLaMA 3.3 70B &middot; Master's Research in Geopolitics of Information Security &middot; 2025</div>
+</footer>
+
+<script>
+const T = {
+  en: {
+    title:"Disinfo Radar", subtitle:"AI-powered Information Threat Analysis",
+    about:"About", aboutText:"This tool was developed as part of a master's research project in Geopolitics of Information Security at Georgian Technical University. It uses LLaMA 3.3 70B AI to analyze texts in geopolitical context.",
+    textLabel:"Analyze Text", placeholder:"Paste any article, news piece or social media post for analysis...",
+    analyzeBtn:"Analyze", analyzing:"Analyzing...", exampleBtn:"Example", clearBtn:"Clear",
+    riskScore:"Risk Score", narrative:"Narrative Type", source:"Probable Source",
+    indicators:"Disinformation Indicators", rec:"Actionable Recommendation", chars:"chars",
+    errorNoText:"Please enter text to analyze", errorApi:"Error. Please try again.",
+    levels:{low:"Low",medium:"Medium",high:"High",critical:"Critical"},
+    example:"Georgia on NATO's doorstep: Brussels is still weighing membership prospects, but experts warn the country is completely unprepared for Euro-Atlantic standards.",
+  },
+  ru: {
+    title:"\u0420\u0430\u0434\u0430\u0440 \u0414\u0435\u0437\u0438\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u0438", subtitle:"AI-\u0430\u043d\u0430\u043b\u0438\u0437 \u0438\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u043e\u043d\u043d\u044b\u0445 \u0443\u0433\u0440\u043e\u0437",
+    about:"\u041e \u043f\u0440\u043e\u0435\u043a\u0442\u0435", aboutText:"\u042d\u0442\u043e\u0442 \u0438\u043d\u0441\u0442\u0440\u0443\u043c\u0435\u043d\u0442 \u0440\u0430\u0437\u0440\u0430\u0431\u043e\u0442\u0430\u043d \u0432 \u0440\u0430\u043c\u043a\u0430\u0445 \u043c\u0430\u0433\u0438\u0441\u0442\u0435\u0440\u0441\u043a\u043e\u0433\u043e \u0438\u0441\u0441\u043b\u0435\u0434\u043e\u0432\u0430\u043d\u0438\u044f \u043f\u043e \u043f\u0440\u0435\u0434\u043c\u0435\u0442\u0443 \u0413\u0435\u043e\u043f\u043e\u043b\u0438\u0442\u0438\u043a\u0430 \u0438\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u043e\u043d\u043d\u043e\u0439 \u0431\u0435\u0437\u043e\u043f\u0430\u0441\u043d\u043e\u0441\u0442\u0438 \u0432 \u0413\u0422\u0423. \u0418\u0441\u043f\u043e\u043b\u044c\u0437\u0443\u0435\u0442 LLaMA 3.3 70B.",
+    textLabel:"\u0410\u043d\u0430\u043b\u0438\u0437 \u0442\u0435\u043a\u0441\u0442\u0430", placeholder:"\u0412\u0441\u0442\u0430\u0432\u044c\u0442\u0435 \u0441\u0442\u0430\u0442\u044c\u044e, \u043d\u043e\u0432\u043e\u0441\u0442\u044c \u0438\u043b\u0438 \u043f\u043e\u0441\u0442 \u0434\u043b\u044f \u0430\u043d\u0430\u043b\u0438\u0437\u0430...",
+    analyzeBtn:"\u0410\u043d\u0430\u043b\u0438\u0437\u0438\u0440\u043e\u0432\u0430\u0442\u044c", analyzing:"\u0410\u043d\u0430\u043b\u0438\u0437 \u0432\u044b\u043f\u043e\u043b\u043d\u044f\u0435\u0442\u0441\u044f...", exampleBtn:"\u041f\u0440\u0438\u043c\u0435\u0440", clearBtn:"\u041e\u0447\u0438\u0441\u0442\u0438\u0442\u044c",
+    riskScore:"\u041e\u0446\u0435\u043d\u043a\u0430 \u0440\u0438\u0441\u043a\u0430", narrative:"\u0422\u0438\u043f \u043d\u0430\u0440\u0440\u0430\u0442\u0438\u0432\u0430", source:"\u0412\u0435\u0440\u043e\u044f\u0442\u043d\u044b\u0439 \u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a",
+    indicators:"\u0418\u043d\u0434\u0438\u043a\u0430\u0442\u043e\u0440\u044b \u0434\u0435\u0437\u0438\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u0438", rec:"\u041f\u0440\u0430\u043a\u0442\u0438\u0447\u0435\u0441\u043a\u0430\u044f \u0440\u0435\u043a\u043e\u043c\u0435\u043d\u0434\u0430\u0446\u0438\u044f", chars:"\u0441\u0438\u043c\u0432\u043e\u043b\u043e\u0432",
+    errorNoText:"\u041f\u043e\u0436\u0430\u043b\u0443\u0439\u0441\u0442\u0430, \u0432\u0432\u0435\u0434\u0438\u0442\u0435 \u0442\u0435\u043a\u0441\u0442 \u0434\u043b\u044f \u0430\u043d\u0430\u043b\u0438\u0437\u0430", errorApi:"\u041e\u0448\u0438\u0431\u043a\u0430. \u041f\u043e\u043f\u0440\u043e\u0431\u0443\u0439\u0442\u0435 \u0441\u043d\u043e\u0432\u0430.",
+    levels:{low:"\u041d\u0438\u0437\u043a\u0438\u0439",medium:"\u0421\u0440\u0435\u0434\u043d\u0438\u0439",high:"\u0412\u044b\u0441\u043e\u043a\u0438\u0439",critical:"\u041a\u0440\u0438\u0442\u0438\u0447\u0435\u0441\u043a\u0438\u0439"},
+    example:"\u0413\u0440\u0443\u0437\u0438\u044f \u043d\u0430 \u043f\u043e\u0440\u043e\u0433\u0435 \u041d\u0410\u0422\u041e: \u0411\u0440\u044e\u0441\u0441\u0435\u043b\u044c \u0440\u0430\u0441\u0441\u043c\u0430\u0442\u0440\u0438\u0432\u0430\u0435\u0442 \u043f\u0435\u0440\u0441\u043f\u0435\u043a\u0442\u0438\u0432\u044b \u0447\u043b\u0435\u043d\u0441\u0442\u0432\u0430, \u043e\u0434\u043d\u0430\u043a\u043e \u044d\u043a\u0441\u043f\u0435\u0440\u0442\u044b \u043f\u0440\u0435\u0434\u0443\u043f\u0440\u0435\u0436\u0434\u0430\u044e\u0442, \u0447\u0442\u043e \u0441\u0442\u0440\u0430\u043d\u0430 \u0441\u043e\u0432\u0435\u0440\u0448\u0435\u043d\u043d\u043e \u043d\u0435 \u0433\u043e\u0442\u043e\u0432\u0430 \u043a \u0435\u0432\u0440\u043e\u0430\u0442\u043b\u0430\u043d\u0442\u0438\u0447\u0435\u0441\u043a\u0438\u043c \u0441\u0442\u0430\u043d\u0434\u0430\u0440\u0442\u0430\u043c.",
+  },
+  ka: {
+    title:"\u10d3\u10d4\u10d6\u10d8\u10dc\u10e4\u10dd\u10e0\u10db\u10d0\u10ea\u10d8\u10d8\u10e1 \u10e0\u10d0\u10d3\u10d0\u10e0\u10d8", subtitle:"\u10d8\u10dc\u10e4\u10dd\u10e0\u10db\u10d0\u10ea\u10d8\u10e3\u10da\u10d8 \u10e1\u10d0\u10e4\u10e0\u10d7\u10ee\u10d4\u10d4\u10d1\u10d8\u10e1 AI \u10d0\u10dc\u10d0\u10da\u10d8\u10d6\u10d8",
+    about:"\u10de\u10e0\u10dd\u10d4\u10e5\u10e2\u10d8\u10e1 \u10e8\u10d4\u10e1\u10d0\u10ee\u10d4\u10d1", aboutText:"\u10d4\u10e1 \u10d8\u10dc\u10e1\u10e2\u10e0\u10e3\u10db\u10d4\u10dc\u10e2\u10d8 \u10e8\u10d4\u10db\u10e3\u10e8\u10d0\u10d5\u10d4\u10d1\u10e3\u10da\u10d8\u10d0 \u10e1\u10d0\u10db\u10d0\u10d2\u10d8\u10e1\u10e2\u10e0\u10dd \u10d9\u10d5\u10da\u10d4\u10d5\u10d8\u10e1 \u10e4\u10d0\u10e0\u10d2\u10da\u10d4\u10d1\u10e8\u10d8 \u10d2\u10e2\u10e3-\u10e8\u10d8. \u10d8\u10d2\u10d8 \u10d8\u10e7\u10d4\u10dc\u10d4\u10d1\u10e1 LLaMA 3.3 70B.",
+    textLabel:"\u10d2\u10d0\u10d0\u10dc\u10d0\u10da\u10d8\u10d6\u10d4\u10d7 \u10e2\u10d4\u10e5\u10e1\u10e2\u10d8", placeholder:"\u10e9\u10d0\u10e1\u10d5\u10d8\u10d7 \u10e1\u10e2\u10d0\u10e2\u10d8\u10d0, \u10e1\u10d8\u10d0\u10ee\u10da\u10d4 \u10d0\u10dc \u10de\u10dd\u10e1\u10e2\u10d8 \u10d0\u10dc\u10d0\u10da\u10d8\u10d6\u10d8\u10e1\u10d7\u10d5\u10d8\u10e1...",
+    analyzeBtn:"\u10d0\u10dc\u10d0\u10da\u10d8\u10d6\u10d8", analyzing:"\u10d0\u10dc\u10d0\u10da\u10d8\u10d6\u10d8 \u10db\u10d8\u10db\u10d3\u10d8\u10dc\u10d0\u10e0\u10d4\u10dd\u10d1\u10e1...", exampleBtn:"\u10db\u10d0\u10d2\u10d0\u10da\u10d8\u10d7\u10d8", clearBtn:"\u10d2\u10d0\u10e1\u10e3\u10e4\u10d7\u10d0\u10d5\u10d4\u10d1\u10d0",
+    riskScore:"\u10e0\u10d8\u10e1\u10d9\u10d8\u10e1 \u10e5\u10e3\u10da\u10d0", narrative:"\u10dc\u10d0\u10e0\u10d0\u10e2\u10d8\u10d5\u10d8\u10e1 \u10e2\u10d8\u10de\u10d8", source:"\u10e1\u10d0\u10d5\u10d0\u10e0\u10d0\u10e3\u10d3\u10dd \u10ec\u10e7\u10d0\u10e0\u10dd",
+    indicators:"\u10d3\u10d4\u10d6\u10d8\u10dc\u10e4\u10dd\u10e0\u10db\u10d0\u10ea\u10d8\u10d8\u10e1 \u10d8\u10dc\u10d3\u10d8\u10d9\u10d0\u10e2\u10dd\u10e0\u10d4\u10d1\u10d8", rec:"\u10e1\u10d0\u10db\u10dd\u10e5\u10db\u10d4\u10d3\u10dd \u10e0\u10d4\u10d9\u10dd\u10db\u10d4\u10dc\u10d3\u10d0\u10ea\u10d8\u10d0", chars:"\u10e1\u10d8\u10db\u10d1\u10dd\u10da\u10dd",
+    errorNoText:"\u10d2\u10d7\u10ee\u10dd\u10d5\u10d7 \u10e8\u10d4\u10d8\u10e7\u10d5\u10d0\u10dc\u10dd\u10d7 \u10e2\u10d4\u10e5\u10e1\u10e2\u10d8 \u10d0\u10dc\u10d0\u10da\u10d8\u10d6\u10d8\u10e1\u10d7\u10d5\u10d8\u10e1", errorApi:"\u10e8\u10d4\u10ea\u10d3\u10dd\u10db\u10d0. \u10e1\u10ea\u10d0\u10d3\u10d4\u10d7 \u10d7\u10d0\u10d5\u10d8\u10d3\u10d0\u10dc.",
+    levels:{low:"\u10d3\u10d0\u10d1\u10d0\u10da\u10d8",medium:"\u10e1\u10d0\u10e8\u10e3\u10d0\u10da\u10dd",high:"\u10db\u10d0\u10e6\u10d0\u10da\u10d8",critical:"\u10d9\u10e0\u10d8\u10e2\u10d8\u10d9\u10e3\u10da\u10d8"},
+    example:"\u10e1\u10d0\u10e5\u10d0\u10e0\u10d7\u10d5\u10d4\u10da\u10dd \u10dc\u10d0\u10e2\u10dd-\u10e1 \u10d9\u10d0\u10e0\u10d8\u10d1\u10e6\u10d4\u10d6\u10d4: \u10d1\u10e0\u10d8\u10e3\u10e1\u10d4\u10da\u10d8 \u10ef\u10d4\u10e0 \u10d9\u10d8\u10d3\u10d4\u10d5 \u10d2\u10d0\u10dc\u10d8\u10ee\u10d8\u10da\u10d0\u10d5\u10e1 \u10d2\u10d0\u10ec\u10d4\u10d5\u10e0\u10d8\u10d0\u10dc\u10d4\u10d1\u10d8\u10e1 \u10de\u10d4\u10e0\u10e1\u10de\u10d4\u10e5\u10e2\u10d8\u10d5\u10d4\u10d1\u10e1, \u10d7\u10e3\u10db\u10ea\u10d0 \u10d4\u10e5\u10e1\u10de\u10d4\u10e0\u10e2\u10d4\u10d1\u10d8 \u10d0\u10e4\u10e0\u10d7\u10ee\u10d8\u10da\u10d4\u10d1\u10d4\u10dc.",
+  }
+};
+
+const RISK_COLORS = {
+  low:      {bg:"#f0fdf4",border:"#86efac",text:"#15803d",borderLeft:"#15803d"},
+  medium:   {bg:"#fffbeb",border:"#fcd34d",text:"#b45309",borderLeft:"#b45309"},
+  high:     {bg:"#fff7ed",border:"#fdba74",text:"#c2410c",borderLeft:"#c2410c"},
+  critical: {bg:"#fef2f2",border:"#fca5a5",text:"#dc2626",borderLeft:"#dc2626"},
+};
+
+let currentLang = 'en';
+
+function setLang(l) {
+  currentLang = l;
+  const t = T[l];
+  document.getElementById('ui-title').textContent = t.title;
+  document.getElementById('ui-subtitle').textContent = t.subtitle;
+  document.getElementById('ui-about').textContent = t.about;
+  document.getElementById('ui-about-text').textContent = t.aboutText;
+  document.getElementById('ui-text-label').textContent = t.textLabel;
+  document.getElementById('inputText').placeholder = t.placeholder;
+  document.getElementById('ui-analyze-btn').textContent = t.analyzeBtn;
+  document.getElementById('ui-example-btn').textContent = t.exampleBtn;
+  document.getElementById('ui-clear-btn').textContent = t.clearBtn;
+  document.getElementById('ui-risk-score').textContent = t.riskScore;
+  document.getElementById('ui-narrative').textContent = t.narrative;
+  document.getElementById('ui-source').textContent = t.source;
+  document.getElementById('ui-indicators').textContent = t.indicators;
+  document.getElementById('ui-rec').textContent = t.rec;
+  document.getElementById('ui-chars').textContent = t.chars;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+function toggleAbout() {
+  const body = document.getElementById('about-body');
+  const arrow = document.getElementById('about-arrow');
+  body.classList.toggle('open');
+  arrow.textContent = body.classList.contains('open') ? '\u25b2' : '\u25bc';
+}
+
+function updateCount() {
+  document.getElementById('charCount').textContent = document.getElementById('inputText').value.length;
+}
+
+function loadExample() {
+  document.getElementById('inputText').value = T[currentLang].example;
+  updateCount();
+}
+
+function clearAll() {
+  document.getElementById('inputText').value = '';
+  updateCount();
+  document.getElementById('resultArea').style.display = 'none';
+  document.getElementById('errorBox').style.display = 'none';
+}
+
+function showError(msg) {
+  const box = document.getElementById('errorBox');
+  box.textContent = '\u26a0 ' + msg;
+  box.style.display = 'block';
+}
+
+async function analyze() {
+  const t = T[currentLang];
+  const text = document.getElementById('inputText').value.trim();
+  document.getElementById('errorBox').style.display = 'none';
+  document.getElementById('resultArea').style.display = 'none';
+
+  if (text.length < 10) return showError(t.errorNoText);
+
+  const btn = document.getElementById('analyzeBtn');
+  btn.disabled = true;
+  btn.innerHTML = '\u23f3 ' + t.analyzing;
+
+  try {
+    const res = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({text})
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    showResult(data);
+  } catch(e) {
+    showError(t.errorApi + ' (' + e.message + ')');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '\ud83d\udd0d ' + t.analyzeBtn;
+  }
+}
+
+function showResult(d) {
+  const t = T[currentLang];
+  const level = d.riskLevel || 'low';
+  const cfg = RISK_COLORS[level] || RISK_COLORS.low;
+
+  const banner = document.getElementById('riskBanner');
+  banner.style.background = cfg.bg;
+  banner.style.border = '1px solid ' + cfg.border;
+  banner.style.borderLeft = '5px solid ' + cfg.borderLeft;
+
+  const badge = document.getElementById('riskBadge');
+  badge.textContent = t.levels[level] || level;
+  badge.style.background = cfg.text;
+
+  const scoreEl = document.getElementById('scoreNum');
+  scoreEl.textContent = d.riskScore + '/100';
+  scoreEl.style.color = cfg.text;
+
+  const fill = document.getElementById('scoreFill');
+  fill.style.width = '0%';
+  setTimeout(() => { fill.style.width = d.riskScore + '%'; }, 50);
+  fill.style.backgroundPosition = d.riskScore + '% 0';
+
+  document.getElementById('summaryText').textContent = d.summary || '';
+  document.getElementById('narrativeVal').textContent = d.narrativeType || '';
+  document.getElementById('sourceVal').textContent = d.probableSource || '';
+  document.getElementById('recText').textContent = d.recommendation || '';
+
+  const list = document.getElementById('indicatorsList');
+  list.innerHTML = (d.indicators || []).map((ind, i) =>
+    '<div class="ind-item"><span class="ind-num">' + (i+1) + '</span><span>' + ind + '</span></div>'
+  ).join('');
+
+  document.getElementById('resultArea').style.display = 'block';
+  document.getElementById('resultArea').scrollIntoView({behavior:'smooth', block:'start'});
+}
+</script>
+</body>
+</html>
