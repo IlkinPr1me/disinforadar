@@ -270,7 +270,7 @@ async function analyze() {
     const res = await fetch('/api/analyze', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({text})
+      body: JSON.stringify({text, lang: currentLang})
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
